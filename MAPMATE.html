@@ -127,7 +127,7 @@
       // Callback function to handle the results of the nearby search
       function callback(results, status) {
         if (status === google.maps.places.PlacesServiceStatus.OK) {
-          console.log(results.length); // Log the number of results
+          console.log(results.length); 
           for (var i = 0; i < 6; i++) {
             createMarker(results[i]); // marker for each result
           }

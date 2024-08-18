@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Map Mate</title>
+
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/5.3.0/css/bootstrap.min.css">
+    <style>
+      /* General styling for the page */
+      body {
+        background-color: #4D79F0;
+        font-family: American Typewriter, serif;
+        justify-content: center;
+        align-items: center;
+        display: flex;
+      }
+
+      /* Styling for the submit button */
+      #submit-button {
+        padding: 10px 20px;
+        font-size: 16px;
+        background-color: #fff;
+        color: #4D79F0;
+        border: 2px solid #4D79F0;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s, color 0.3s;
+      }
+
+      /* Hover effects for the submit button */
+      #submit-button:hover {
+        background-color: #6AE400;
+        color: #fff;
+      }
+
+      /* Styling for the map container */
+      #map {
+        height: 400px;
+        width: 100%;
+      }
+
+      /* Additional styling for the results table */
+      #results-table {
+        margin-top: 20px;
+      }
+
+      /* Ensure images are responsive and fit within their container */
+      img {
+        max-width: 100%; /* Scale images to fit within their container */
+        height: auto; /* Maintain aspect ratio */
+      }
+    </style>
+  </head>
+
+  <body>
+
+    <div class="container">
+      <h1 class="text-center">Map Mate</h1>
+      <!--Div to hold the Google Map-->
+      <div id="map"></div>
+      <!--Form group containing the autocomplete input and submit button -->
+
+        <!--Input field for entering the location -->
+        <input type="text" class="form-control" id="autocomplete" placeholder="Enter Location">
+        <button id="submit-button" onclick="searchNearbyPlaces()">Submit</button>
+      </div>
+      <div class="form-group" >
+        <br>
+        <select class="form-control" id="type">
+          <option value="lodging">Hotels</option>
+          <option value="shopping_mall">Shopping</option>
+          <option value="art_gallery">Art and Architecture</option>
+          <option value="stadium">stadiums</option>
+          <option value="restaurant">Restaurants</option >
+          <option value="cafe">Cafe</option>
+          <option value = "train_station">Train Stations</option>
+        </select>
+      </div>
+      <!-- Table to display the search results -->
+      <table class="table" id="results-table"></table>
+    </div>
+
+    <!-- Google Maps API -->
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCY5gJ__Ww3E2lR12lp3EIAi2VgjIMLwhc&libraries=places&callback=initMap"
+            async defer></script>
+
+    <script>
+      let autocomplete;
+
+      // Initialize the Google Maps Autocomplete feature
+      function initMap() {
+        autocomplete = new google.maps.places.Autocomplete(document.getElementById('autocomplete'), {
+          types: ['geocode'] // Limit results to geographical locations
+        });
+
+        // Add an event listener to handle place selection
+        autocomplete.addListener('place_changed', searchNearbyPlaces);
+      }
+
+      // Function to search for nearby places based on the selected location
+      function searchNearbyPlaces() {
+        // Clear previous results from the table
+        var resultsTable = document.getElementById('results-table');
+        resultsTable.innerHTML = '';
+
+        // Get the selected place from the autocomplete input
+        var place = autocomplete.getPlace();
+
+        // Get the selected place type from the dropdown
+        var selectedType = document.getElementById('type').value;
+
+        //  map centered on the selected place
+        let map = new google.maps.Map(document.getElementById('map'), {
+          center: place.geometry.location, // Center the map on the selected place
+          zoom: 15 // Set the zoom level
+        });
+
+        // Use the PlacesService to search for nearby places of the selected type
+        let service = new google.maps.places.PlacesService(map);
+        service.nearbySearch({
+          location: place.geometry.location, // Location to search around
+          radius: 9000, // Search within a 1000-meter radius
+          type: [selectedType] // Type of places to search for (based on user selection)
+        }, callback);
+      }
+
+      // Callback function to handle the results of the nearby search
+      function callback(results, status) {
+        if (status === google.maps.places.PlacesServiceStatus.OK) {
+          console.log(results.length); // Log the number of results
+          for (var i = 0; i < 6; i++) {
+            createMarker(results[i]); // marker for each result
+          }
+        }
+      }
+
+      // Function to create a table row for each place and display a photo if available
+      function createMarker(place) {
+        var table = document.getElementById('results-table');
+        var row = table.insertRow();
+        var cell1 = row.insertCell(0);
+        cell1.innerHTML = place.name; // Insert the place name into the cell
+
+        // Check if the place has photos
+        if (place.photos && place.photos.length > 0) {
+          let photoUrl = place.photos[0].getUrl({maxWidth: 300, maxHeight: 300});
+          let cell2 = row.insertCell(1);
+          cell2.innerHTML = `<img src="${photoUrl}" alt="${place.name}" />`;
+        }
+      }
+    </script>
+  </body>
+</html>
